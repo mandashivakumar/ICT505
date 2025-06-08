@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starbucks CKM Strategies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral (Slate, Stone, Subtle Green Accent) -->
+    <!-- Application Structure Plan: The SPA uses a tab-based navigation structure to cleanly separate "Push" and "Pull" strategies. This is more user-friendly than a long scrolling page, allowing for direct comparison. The main content area uses a responsive grid to display interactive cards for each strategy alongside a dynamic donut chart. This dashboard-like approach was chosen to present both qualitative details (on cards) and a quantitative summary (the chart) simultaneously, which enhances understanding and allows users to synthesize information more effectively. User flow is simple: select a tab, view the detailed cards, and see the corresponding platform usage summary in the chart. -->
+    <!-- Visualization & Content Choices: Report Info -> CKM Strategies; Goal -> Compare Push vs. Pull, show platform usage; Viz/Presentation -> Interactive cards for detail, dynamic Donut chart for summary; Interaction -> Tab buttons to switch data views, chart updates on tab switch; Justification -> Cards make each strategy a digestible unit. The donut chart adds a new layer of analysis by quantifying platform focus for each strategy type, which isn't explicit in the source text. This directly supports the goal of synthesizing key information; Library/Method -> Chart.js for the canvas-based donut chart. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .platform-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Starbucks' Customer Knowledge Management</h1>
+            <p class="mt-2 text-lg text-slate-600">An Interactive Look at Push vs. Pull Strategies in Social Media</p>
+        </header>
+
+        <main>
+            <div class="w-full max-w-md mx-auto bg-stone-200 rounded-full p-1.5 flex mb-8">
+                <button id="push-btn" class="w-1/2 py-2.5 rounded-full text-sm md:text-base font-semibold transition-colors duration-300">Push Strategies</button>
+                <button id="pull-btn" class="w-1/2 py-2.5 rounded-full text-sm md:text-base font-semibold transition-colors duration-300">Pull Strategies</button>
+            </div>
+
+            <div id="content-area" class="transition-opacity duration-500">
+                <div class="text-center mb-8">
+                    <h2 id="section-title" class="text-2xl font-bold text-slate-800"></h2>
+                    <p id="section-description" class="mt-1 text-slate-500 max-w-3xl mx-auto"></p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                    <div id="strategy-cards" class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-center text-slate-700 mb-4">Platform Usage Breakdown</h3>
+                        <div class="chart-container">
+                            <canvas id="platform-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const pushData = [
+            { title: "Proactive Announcements", platforms: ["Twitter", "Facebook"], description: "Actively shares info about new products (e.g., Pumpkin Spice Latte), promotions, and limited-time offers to create awareness and drive sales." },
+            { title: "Location-Specific Offers", platforms: ["Foursquare"], description: "Targets customers in specific geographic areas with tailored offers and information about local store events, encouraging visits." },
+            { title: "Disseminating Culture & Values", platforms: ["Facebook", "Twitter"], description: "Communicates brand values, ethical sourcing practices, and community involvement initiatives to build a positive brand image." },
+            { title: "Status Updates on Ideas", platforms: ["MyStarbucksIdea"], description: "Keeps customers informed on the progress of their submitted ideas (e.g., 'under review', 'coming soon'), demonstrating transparency." },
+            { title: "Addressing Rumors", platforms: ["Twitter"], description: "Uses Twitter to quickly and directly address false information or negative rumors circulating online, protecting its reputation." }
+        ];
+
+        const pullData = [
+            { title: "Soliciting Feedback", platforms: ["Facebook"], description: "Uses polls and open-ended questions to actively solicit customer opinions, preferences, and feedback on various topics." },
+            { title: "Encouraging Idea Submissions", platforms: ["MyStarbucksIdea"], description: "Provides a dedicated platform for customers to submit new product ideas, service improvements, and suggestions for the company." },
+            { title: "Monitoring Conversations", platforms: ["Twitter", "Facebook"], description: "Actively monitors social media conversations and brand mentions to understand customer sentiment and identify emerging trends." },
+            { title: "Collecting Local Reviews", platforms: ["Foursquare"], description: "Encourages customers to leave tips and reviews about specific store locations, gaining insights into local customer experiences." },
+            { title: "Responding to Inquiries", platforms: ["Twitter", "Facebook"], description: "Promptly responds to customer questions, concerns, and complaints on social media, showing commitment to customer service." }
+        ];
+
+        const platformColors = {
+            'Twitter': '#1DA1F2',
+            'Facebook': '#1877F2',
+            'Foursquare': '#F94877',
+            'MyStarbucksIdea': '#00704A',
+        };
+
+        const platformIcons = {
+            'Twitter': 'T',
+            'Facebook': 'f',
+            'Foursquare': '4',
+            'MyStarbucksIdea': '💡'
+        };
+
+        const pushBtn = document.getElementById('push-btn');
+        const pullBtn = document.getElementById('pull-btn');
+        const strategyCardsContainer = document.getElementById('strategy-cards');
+        const sectionTitle = document.getElementById('section-title');
+        const sectionDescription = document.getElementById('section-description');
+        const chartCanvas = document.getElementById('platform-chart');
+        let platformChart = null;
+
+        function createStrategyCard(strategy) {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col h-full transform hover:-translate-y-1 transition-transform duration-300';
+            
+            const iconsHTML = strategy.platforms.map(p => `
+                <div class="platform-icon" style="background-color: ${platformColors[p] || '#64748b'};" title="${p}">
+                    ${platformIcons[p] || '?'}
+                </div>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="flex-grow">
+                    <h4 class="font-bold text-lg text-slate-800 mb-2">${strategy.title}</h4>
+                    <p class="text-slate-600 text-sm">${strategy.description}</p>
+                </div>
+                <div class="flex items-center gap-x-2 mt-4 pt-4 border-t border-stone-200">
+                    <span class="text-xs font-semibold text-slate-500">Platforms:</span>
+                    <div class="flex gap-x-2">${iconsHTML}</div>
+                </div>
+            `;
+            return card;
+        }
+
+        function updateChart(data) {
+            const platformCounts = {};
+            data.forEach(strategy => {
+                strategy.platforms.forEach(platform => {
+                    platformCounts[platform] = (platformCounts[platform] || 0) + 1;
+                });
+            });
+
+            const labels = Object.keys(platformCounts);
+            const counts = Object.values(platformCounts);
+            const backgroundColors = labels.map(label => platformColors[label] || '#64748b');
+
+            if (platformChart) {
+                platformChart.destroy();
+            }
+
+            platformChart = new Chart(chartCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: backgroundColors,
+                        borderColor: '#ffffff',
+                        borderWidth: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 14,
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: '#1e293b',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 14 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        label += `${context.raw} mentions (${percentage}%)`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function displayStrategies(type) {
+            const data = type === 'push' ? pushData : pullData;
+            
+            document.getElementById('content-area').style.opacity = '0';
+
+            setTimeout(() => {
+                strategyCardsContainer.innerHTML = '';
+                data.forEach(strategy => {
+                    strategyCardsContainer.appendChild(createStrategyCard(strategy));
+                });
+                updateChart(data);
+
+                if (type === 'push') {
+                    pushBtn.classList.add('bg-white', 'text-slate-900', 'shadow');
+                    pullBtn.classList.remove('bg-white', 'text-slate-900', 'shadow');
+                    sectionTitle.textContent = "Push Strategies";
+                    sectionDescription.textContent = "Broadcasting information outwards to the customer base to inform and create awareness.";
+                } else {
+                    pullBtn.classList.add('bg-white', 'text-slate-900', 'shadow');
+                    pushBtn.classList.remove('bg-white', 'text-slate-900', 'shadow');
+                    sectionTitle.textContent = "Pull Strategies";
+                    sectionDescription.textContent = "Drawing information and engagement inwards from the customer base to gather insights and build community.";
+                }
+                document.getElementById('content-area').style.opacity = '1';
+            }, 300);
+        }
+
+        pushBtn.addEventListener('click', () => displayStrategies('push'));
+        pullBtn.addEventListener('click', () => displayStrategies('pull'));
+
+        window.onload = () => {
+            displayStrategies('push');
+        };
+    </script>
+</body>
+</html>
