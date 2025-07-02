@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTMG Process Improvement: As-Is & To-Be Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Corporate Calm (Warm Neutrals with Red/Amber and Green/Blue Accents) -->
+    <!-- Application Structure Plan: A unified, two-part narrative structure. The page is split into "As-Is Analysis" and "To-Be Solution". Each part contains its own summary, interactive BPMN model, and concluding chart. A top-level navigation allows users to jump between the problem and solution sections, creating a cohesive story that first establishes the issues and then presents the resolution in a logical flow. -->
+    <!-- Visualization & Content Choices: 
+        1. As-Is Section: Uses stat cards for impact, an interactive BPMN diagram to explore failures, and a bar chart to quantify pain points. This combination effectively diagnoses the problem.
+        2. To-Be Section: Uses solution cards for strategy, an interactive BPMN to visualize improvements, a comparison table for clarity, and a radar chart to showcase projected success. This combination effectively presents the solution and its benefits.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 450px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .nav-link { transition: color 0.3s ease; }
+        
+        .bpmn-grid { display: grid; grid-template-columns: 120px 1fr; gap: 2px; }
+        .bpmn-lane-header { writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; font-weight: 600; padding: 8px 4px; background-color: #f3f4f6; border-right: 2px solid #e5e7eb; letter-spacing: 0.05em; }
+        .bpmn-lane-content { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; padding: 8px; overflow-x: auto; background-color: #f9fafb; }
+        
+        .bpmn-item { cursor: pointer; transition: all 0.2s ease-in-out; padding: 8px 12px; border-radius: 8px; border: 2px solid #d1d5db; background-color: #ffffff; font-size: 14px; text-align: center; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        
+        #as-is-bpmn .bpmn-item:hover { border-color: #f59e0b; }
+        #as-is-bpmn .bpmn-item.active { background-color: #ef4444; color: #ffffff; border-color: #dc2626; }
+        
+        #tobe-bpmn .bpmn-item:hover { border-color: #10b981; }
+        #tobe-bpmn .bpmn-item.active { background-color: #10b981; color: #ffffff; border-color: #059669; }
+
+        .bpmn-item.gateway { border-radius: 0; transform: rotate(45deg); width: 50px; height: 50px; padding: 0; }
+        .bpmn-item.gateway.active { transform: rotate(45deg) translateY(-2px); }
+        .bpmn-item.gateway span { transform: rotate(-45deg); }
+        .bpmn-item.event { border-radius: 50%; width: 60px; height: 60px; padding: 0; border-style: dashed; }
+        .bpmn-item.automated { border-style: solid; background-color: #f0fdf4; border-color: #86efac; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold text-gray-700">CTMG Process Improvement</div>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#as-is-summary" class="nav-link text-gray-600 hover:text-cyan-700">As-Is Summary</a>
+                <a href="#as-is-bpmn" class="nav-link text-gray-600 hover:text-cyan-700">As-Is BPMN</a>
+                <a href="#solutions" class="nav-link text-gray-600 hover:text-emerald-600">To-Be Solutions</a>
+                <a href="#tobe-model" class="nav-link text-gray-600 hover:text-emerald-600">To-Be BPMN</a>
+                <a href="#outcomes" class="nav-link text-gray-600 hover:text-emerald-600">Outcomes</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- AS-IS SECTION -->
+        <section id="as-is-section" class="mb-24">
+            <h2 class="text-3xl font-bold text-cyan-800 mb-4 text-center border-b-2 pb-4">As-Is Analysis: Identifying the Problems</h2>
+            
+            <section id="as-is-summary" class="mb-20 scroll-mt-20 pt-10">
+                <p class="text-lg text-gray-600 mb-8 max-w-4xl mx-auto text-center">The current Order-to-Cash process is fragmented and relies on manual steps, leading to significant operational challenges, customer dissatisfaction, and revenue loss.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-red-50 p-6 rounded-lg"><div class="text-5xl font-extrabold text-red-600">~15</div><div class="mt-2 text-lg font-semibold text-red-800">Customer Complaints</div><p class="text-sm text-red-700">Reported each month due to delivery issues.</p></div>
+                    <div class="bg-amber-50 p-6 rounded-lg"><div class="text-5xl font-extrabold text-amber-600">⚠️</div><div class="mt-2 text-lg font-semibold text-amber-800">Declining Satisfaction</div><p class="text-sm text-amber-700">Directly leading to the loss of valuable clients.</p></div>
+                    <div class="bg-gray-100 p-6 rounded-lg"><div class="text-5xl font-extrabold text-gray-600">📉</div><div class="mt-2 text-lg font-semibold text-gray-800">Negative Impact</div><p class="text-sm text-gray-700">Damaging company revenue and reputation.</p></div>
+                </div>
+            </section>
+
+            <section id="as-is-bpmn" class="mb-20 scroll-mt-20">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Interactive "As-Is" Process Map</h3>
+                <p class="text-lg text-gray-600 mb-10 max-w-4xl mx-auto text-center">Click on any task, event, or decision point in the diagram below to see its description and the associated operational issues.</p>
+                <div class="bg-white p-8 rounded-xl shadow-md border border-gray-200">
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <div class="lg:w-2/3 overflow-hidden">
+                            <div id="as-is-bpmn-container" class="bpmn-grid"></div>
+                        </div>
+                        <div class="lg:w-1/3 bg-gray-50 rounded-lg p-6 border">
+                            <h4 class="text-xl font-bold text-cyan-800 mb-4">Details & Issues</h4>
+                            <div id="as-is-process-details"><p class="text-gray-500">Select a process step to see the details.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- TO-BE SECTION -->
+        <section id="to-be-section">
+            <h2 class="text-3xl font-bold text-emerald-700 mb-4 text-center border-b-2 pb-4">To-Be Model: The Proposed Solution</h2>
+
+            <section id="solutions" class="mb-20 scroll-mt-20 pt-10">
+                <p class="text-lg text-gray-600 mb-10 max-w-4xl mx-auto text-center">To address the critical failures, we propose a "To-Be" model focused on system integration, automation, and proactive communication to create a reliable and efficient Order-to-Cash cycle.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200"><h3 class="text-xl font-semibold text-emerald-700 mb-2">1. ERP & 3PL Integration</h3><p class="text-gray-600">Establish a direct API connection for real-time, two-way inventory synchronization.</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200"><h3 class="text-xl font-semibold text-emerald-700 mb-2">2. Process Automation</h3><p class="text-gray-600">Automate stock checks, delivery document creation, and fulfillment requests to eliminate errors.</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200"><h3 class="text-xl font-semibold text-emerald-700 mb-2">3. Proactive Notifications</h3><p class="text-gray-600">Implement automated, accurate customer notifications based on real-time data.</p></div>
+                </div>
+            </section>
+
+            <section id="tobe-model" class="mb-20 scroll-mt-20">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Interactive "To-Be" Process Model</h3>
+                <p class="text-lg text-gray-600 mb-10 max-w-4xl mx-auto text-center">Click on the redesigned steps below to see how automation (highlighted in green) and integration create a more streamlined process.</p>
+                <div class="bg-white p-8 rounded-xl shadow-md border border-gray-200">
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <div class="lg:w-2/3 overflow-hidden">
+                            <div id="tobe-bpmn-container" class="bpmn-grid"></div>
+                        </div>
+                        <div class="lg:w-1/3 bg-gray-50 rounded-lg p-6 border">
+                            <h4 class="text-xl font-bold text-emerald-700 mb-4">Improvement Details</h4>
+                            <div id="tobe-process-details"><p class="text-gray-500">Select a process step to see the details.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="comparison" class="mb-20 scroll-mt-20">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">As-Is vs. To-Be: A Clear Improvement</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    <div class="bg-red-50 p-6 rounded-lg border border-red-200"><h4 class="text-2xl font-bold text-red-700 mb-4 text-center">As-Is (Current State)</h4><ul class="space-y-3 text-red-900"><li>❌ Manual stock check against stale ERP data.</li><li>❌ High risk of processing orders for out-of-stock items.</li><li>❌ Delays from manual communication with 3PL.</li><li>❌ Reactive problem-solving after errors occur.</li></ul></div>
+                    <div class="bg-emerald-50 p-6 rounded-lg border border-emerald-200"><h4 class="text-2xl font-bold text-emerald-700 mb-4 text-center">To-Be (Proposed State)</h4><ul class="space-y-3 text-emerald-900"><li>✅ Automated, real-time stock check via API.</li><li>✅ Order creation only for physically available stock.</li><li>✅ Instant, automated delivery requests to 3PL system.</li><li>✅ Accurate, timely customer notifications.</li></ul></div>
+                </div>
+            </section>
+
+            <section id="outcomes" class="scroll-mt-20">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Expected Outcomes</h3>
+                <p class="text-lg text-gray-600 mb-10 max-w-4xl mx-auto text-center">The "To-Be" model is projected to deliver significant improvements across key performance indicators, leading to higher efficiency and enhanced customer loyalty.</p>
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border border-gray-200">
+                    <div class="chart-container">
+                        <canvas id="outcomesChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer class="bg-white mt-20 border-t">
+        <div class="container mx-auto px-6 py-6 text-center text-gray-500"><p>&copy; 2025 CTMG Process Improvement Proposal.</p></div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- SHARED FUNCTIONS ---
+        const smoothScroll = (e) => {
+            e.preventDefault();
+            document.querySelector(e.target.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+        };
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => anchor.addEventListener('click', smoothScroll));
+
+        // --- AS-IS MODEL ---
+        const asIsLanes = ['Customer', 'ERP', 'Sales & Dispatch', 'Finance', 'Production & Shipping', '3P Warehouse'];
+        const asIsSteps = [
+            { id: 'start', lane: 'Sales & Dispatch', col: 1, type: 'event', name: 'Order Received', detail: 'Process starts when a customer order is received.' },
+            { id: 'check_credit', lane: 'Sales & Dispatch', col: 2, type: 'task', name: 'Check Credit', detail: 'Manual credit check is performed.' },
+            { id: 'check_stock', lane: 'Sales & Dispatch', col: 3, type: 'task', name: 'Check Stock', detail: 'ISSUE: Stock levels are checked in ERP, but data is often NOT synchronized with the 3PL warehouse.' },
+            { id: 'stock_ok', lane: 'Sales & Dispatch', col: 4, type: 'gateway', name: 'Stock OK?', detail: 'ISSUE: Decision is based on unreliable data, leading to incorrect process flows.' },
+            { id: 'handle_shortage', lane: 'Sales & Dispatch', col: 5, span: 3, type: 'sub-process', name: 'Handle Stock Shortage', detail: 'ISSUE: A complex, manual sub-process causing significant delays.' },
+            { id: 'create_delivery', lane: 'ERP', col: 5, type: 'task', name: 'Create Delivery Doc', detail: 'ISSUE: Delivery documents are created for items that may not physically exist at the 3PL.' },
+            { id: 'send_to_3pl', lane: 'ERP', col: 6, type: 'task', name: 'Send to 3PL', detail: 'ISSUE: Often a manual email, which can be missed or delayed.' },
+            { id: '3pl_pick', lane: '3P Warehouse', col: 8, type: 'task', name: 'Pick & Pack', detail: 'CRITICAL FAILURE: This is where physical inventory discrepancies are discovered, halting the process.' },
+            { id: 'goods_issue', lane: 'ERP', col: 9, type: 'task', name: 'Post Goods Issue', detail: 'ISSUE: ERP is updated before shipment confirmation, further desynchronizing systems.' },
+            { id: 'invoice', lane: 'Finance', col: 11, type: 'task', name: 'Generate Invoice', detail: 'ISSUE: Invoice can be incorrect if the actual shipped quantity differs.' },
+            { id: 'end', lane: 'Sales & Dispatch', col: 12, type: 'event', name: 'Order Closed', detail: 'Process closes, but often with unresolved issues or customer dissatisfaction.' },
+        ];
+        const asIsBpmnContainer = document.getElementById('as-is-bpmn-container');
+        const asIsProcessDetails = document.getElementById('as-is-process-details');
+
+        function renderAsIsBPMN() {
+            asIsLanes.forEach(lane => {
+                const header = document.createElement('div');
+                header.className = 'bpmn-lane-header';
+                header.textContent = lane;
+                asIsBpmnContainer.appendChild(header);
+                const content = document.createElement('div');
+                content.className = 'bpmn-lane-content';
+                content.id = `as-is-lane-${lane.replace(/\s+/g, '-')}`;
+                asIsBpmnContainer.appendChild(content);
+            });
+            asIsSteps.forEach(step => {
+                const laneContent = document.getElementById(`as-is-lane-${step.lane.replace(/\s+/g, '-')}`);
+                if (laneContent) {
+                    const item = document.createElement('div');
+                    item.id = `as-is-step-${step.id}`;
+                    item.className = `bpmn-item ${step.type}`;
+                    item.dataset.id = step.id;
+                    item.style.gridColumn = `span ${step.span || 1}`;
+                    if(step.col) item.style.gridColumnStart = step.col;
+                    const text = document.createElement('span');
+                    text.textContent = step.name;
+                    item.appendChild(text);
+                    laneContent.appendChild(item);
+                }
+            });
+            asIsBpmnContainer.addEventListener('click', e => {
+                const targetItem = e.target.closest('.bpmn-item');
+                if (targetItem) { updateAsIsDetails(targetItem.dataset.id); }
+            });
+        }
+
+        function updateAsIsDetails(stepId) {
+            const step = asIsSteps.find(s => s.id === stepId);
+            document.querySelectorAll('#as-is-bpmn .bpmn-item').forEach(node => node.classList.remove('active'));
+            if (step) {
+                document.getElementById(`as-is-step-${step.id}`).classList.add('active');
+                asIsProcessDetails.innerHTML = `<h4 class="font-bold text-lg text-gray-800 mb-2">${step.name}</h4><p class="text-gray-700">${step.detail}</p>`;
+            } else {
+                asIsProcessDetails.innerHTML = `<p class="text-gray-500">Select a process step to see the details.</p>`;
+            }
+        }
+        renderAsIsBPMN();
+        updateAsIsDetails('check_stock');
+
+        // --- TO-BE MODEL ---
+        const toBeLanes = ['Customer', 'ERP / 3PL (Integrated)', 'Sales & Dispatch', 'Finance'];
+        const toBeSteps = [
+            { id: 'start', lane: 'Sales & Dispatch', col: 1, type: 'event', name: 'Order Received', detail: 'Process start is faster and more reliable.' },
+            { id: 'auto_check', lane: 'ERP / 3PL (Integrated)', col: 2, span: 2, type: 'task', class: 'automated', name: 'Automated Stock & Credit Check', detail: 'SOLUTION: Real-time API call to 3PL system to verify physical stock. Credit check is also automated.' },
+            { id: 'stock_ok', lane: 'ERP / 3PL (Integrated)', col: 4, type: 'gateway', name: 'Stock OK?', detail: 'Decision is based on 100% accurate, real-time inventory data.' },
+            { id: 'auto_reserve', lane: 'ERP / 3PL (Integrated)', col: 5, type: 'task', class: 'automated', name: 'Create Delivery & Reserve Stock', detail: 'SOLUTION: ERP automatically creates delivery doc and sends API call to 3PL to reserve stock immediately.' },
+            { id: 'auto_notify', lane: 'Customer', col: 6, type: 'task', class: 'automated', name: 'Confirm Order', detail: 'SOLUTION: An automated, accurate order confirmation is sent to the customer instantly.' },
+            { id: '3pl_pick', lane: 'ERP / 3PL (Integrated)', col: 7, type: 'task', class: 'automated', name: '3PL Pick & Pack', detail: '3PL receives an automated request and can proceed without delay or risk of stockouts.' },
+            { id: 'auto_gi', lane: 'ERP / 3PL (Integrated)', col: 8, type: 'task', class: 'automated', name: 'Automated Goods Issue & Notify', detail: 'SOLUTION: 3PL shipment signal automatically posts Goods Issue in ERP and notifies customer.' },
+            { id: 'auto_invoice', lane: 'Finance', col: 9, type: 'task', class: 'automated', name: 'Automated Invoicing', detail: 'SOLUTION: Invoicing is triggered automatically based on confirmed shipment, ensuring accuracy.' },
+            { id: 'end', lane: 'Sales & Dispatch', col: 10, type: 'event', name: 'Order Closed', detail: 'Process closes efficiently with high data integrity.' },
+        ];
+        const tobeBpmnContainer = document.getElementById('tobe-bpmn-container');
+        const tobeProcessDetails = document.getElementById('tobe-process-details');
+
+        function renderToBeBPMN() {
+            toBeLanes.forEach(lane => {
+                const header = document.createElement('div');
+                header.className = 'bpmn-lane-header';
+                header.textContent = lane;
+                tobeBpmnContainer.appendChild(header);
+                const content = document.createElement('div');
+                content.className = 'bpmn-lane-content';
+                content.id = `tobe-lane-${lane.replace(/[\s/]+/g, '-')}`;
+                tobeBpmnContainer.appendChild(content);
+            });
+            toBeSteps.forEach(step => {
+                const laneContent = document.getElementById(`tobe-lane-${step.lane.replace(/[\s/]+/g, '-')}`);
+                if (laneContent) {
+                    const item = document.createElement('div');
+                    item.id = `tobe-step-${step.id}`;
+                    item.className = `bpmn-item ${step.type} ${step.class || ''}`;
+                    item.dataset.id = step.id;
+                    item.style.gridColumn = `span ${step.span || 1}`;
+                    if(step.col) item.style.gridColumnStart = step.col;
+                    const text = document.createElement('span');
+                    text.textContent = step.name;
+                    item.appendChild(text);
+                    laneContent.appendChild(item);
+                }
+            });
+            tobeBpmnContainer.addEventListener('click', e => {
+                const targetItem = e.target.closest('.bpmn-item');
+                if (targetItem) { updateToBeDetails(targetItem.dataset.id); }
+            });
+        }
+
+        function updateToBeDetails(stepId) {
+            const step = toBeSteps.find(s => s.id === stepId);
+            document.querySelectorAll('#tobe-bpmn .bpmn-item').forEach(node => node.classList.remove('active'));
+            if (step) {
+                document.getElementById(`tobe-step-${step.id}`).classList.add('active');
+                tobeProcessDetails.innerHTML = `<h4 class="font-bold text-lg text-gray-800 mb-2">${step.name}</h4><p class="text-gray-700">${step.detail}</p>`;
+            } else {
+                tobeProcessDetails.innerHTML = `<p class="text-gray-500">Select a process step to see the details.</p>`;
+            }
+        }
+        renderToBeBPMN();
+        updateToBeDetails('auto_check');
+
+        // --- OUTCOMES CHART ---
+        const outcomesCtx = document.getElementById('outcomesChart').getContext('2d');
+        new Chart(outcomesCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Inventory Accuracy', 'Order Cycle Time', 'Customer Satisfaction', 'Manual Errors', 'Shipping Delays'],
+                datasets: [{
+                    label: 'As-Is State', data: [3, 4, 3, 8, 9],
+                    borderColor: 'rgba(239, 68, 68, 0.8)', backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                }, {
+                    label: 'To-Be State (Projected)', data: [9, 9, 8, 2, 2],
+                    borderColor: 'rgba(16, 185, 129, 0.8)', backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Projected KPI Improvement (Scale 1-10)', font: { size: 18 } }, tooltip: { enabled: true } },
+                scales: { r: { beginAtZero: true, max: 10, pointLabels: { font: { size: 14 } } } }
+            }
+        });
+    });
+    </script>
+</body>
+</html>
